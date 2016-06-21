@@ -1,0 +1,42 @@
+html{
+	height:100%;
+	width:100%;
+	background-color:#ffffff;
+	background-position:center 0px;
+	background-size:100%;
+}
+
+body{
+	font-family: "Open Sans", Arial, Helvetica, sans-serif;
+	font-size:12pt;
+	margin:0px;
+	background-attachment: scroll;
+	background-repeat: repeat-y;
+	width:100%;
+	height:100%;
+	font-weight: 200;
+}
+
+canvas{
+	box-shadow: 0 0 1px black;
+}
+
+img{
+	/*float: left;*/
+}
+
+li{
+	margin-bottom: 130px;
+}
+
+li img{
+	width : 80px;
+}
+
+span{
+	margin-left: 40px;
+}
+
+.dTwo{
+	margin-left: 150px;
+}
