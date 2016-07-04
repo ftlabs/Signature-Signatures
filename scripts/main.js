@@ -1,7 +1,7 @@
 /*global document, signature, sources */
 
 var signature = (function(){
-
+	'use strict';
 	var normaliserCanvas = document.querySelector('#normaliser'),
 		nCtx = normaliserCanvas.getContext('2d');
 	
@@ -63,10 +63,10 @@ var signature = (function(){
 			var pixelData = nCtx.getImageData(0,0,normaliserCanvas.width, normaliserCanvas.height);
 			var d = pixelData.data;
 
-			var t = normaliserCanvas.height, 
-				l = normaliserCanvas.width,
-				r = 0
-				b = 0;
+			var t = normaliserCanvas.height;
+			var l = normaliserCanvas.width;
+			var r = 0;
+			var b = 0;
 			
 			var counts = new Array(normaliserCanvas.width);
 			
