@@ -45,12 +45,12 @@ var signature = (function(){
 		i.setAttribute('hidden', 'true');
 		i.src = sources[x];
 
-		console.log(sources[x]);
+		// console.log(sources[x]);
 
 	}
 
 	function normalise(){
-		console.log('Normalise');
+		// console.log('Normalise');
 
 		for(var z = 0; z < signatures.length; z += 1){
 
@@ -107,7 +107,7 @@ var signature = (function(){
 
 			nCtx.putImageData(pixelData, 0, 0);
 
-			console.log(l, r, b, t);
+			// console.log(l, r, b, t);
 
 			// counts.splice(r, normaliserCanvas.width - r);
 			// counts.splice(0, l);
@@ -166,7 +166,7 @@ var signature = (function(){
 
 			}
 
-			console.log(counts, counts.length);
+			// console.log(counts, counts.length);
 			signature.counts = counts;
 
 			// If over 30% of the pixels in a column are black, it can be considered a peak
@@ -216,7 +216,7 @@ var signature = (function(){
 
 			}
 
-			console.log(signature.peaks);
+			// console.log(signature.peaks);
 
 			signature.firstPeak = signature.peaks[0];
 
@@ -255,13 +255,13 @@ var signature = (function(){
 
 			});*/
 
-			signatures.forEach( comparisonSignature => {
+			var comparisons = signatures.map( comparisonSignature => {
 				
 				if(signature.id === comparisonSignature.id){
 					return
 				}
 
-				console.log(signature.id, '=>', comparisonSignature.id);
+				// console.log(signature.id, '=>', comparisonSignature.id);
 
 				var peakOffset = comparisonSignature.firstPeak.middle - signature.firstPeak.middle;
 
@@ -279,10 +279,14 @@ var signature = (function(){
 					offSetArray.pop();
 				}
 
-				console.log(offSetArray);
-				console.log("Not shifted:", correlate( signature.counts, comparisonSignature.counts ) );
-				console.log("Shifted:", correlate( signature.counts, offSetArray ) );
+				// console.log(offSetArray);
+				// console.log("Not shifted:", correlate( signature.counts, comparisonSignature.counts ) );
+				// console.log("Shifted:", correlate( signature.counts, offSetArray ) );
 				
+				return {
+					id : comparisonSignature.id,
+					similarity : correlate( signature.counts, comparisonSignature.counts ) 
+				};
 
 				/*comparisonSignature.peaks.forEach(peak => {
 
@@ -300,6 +304,31 @@ var signature = (function(){
 				});*/
 
 			});
+
+			comparisons = comparisons.filter(o => {
+				return o !== undefined;
+			})
+			
+			comparisons.sort( (a,b) => {
+
+				if(a.similarity > b.similarity){
+					return -1
+				} else {
+					return 1
+				}
+
+				return 0;
+
+			} );
+
+			// debugger;
+
+			// if(comparisons[0].similarity > 0.5){
+				console.log(signature.id, 'is most like', comparisons[0].id, '=>', comparisons[0].similarity);				
+			// }
+
+
+			signature.comparisons = comparisons;
 
 		});
 
