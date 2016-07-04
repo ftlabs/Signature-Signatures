@@ -272,6 +272,18 @@ var signature = (function(){
 
 				}
 
+				var offSetArray = comparisonSignature.counts.slice(0);
+
+				for(var q = peakOffset; q < 0; q += 1){
+					offSetArray.unshift(0);
+					offSetArray.pop();
+				}
+
+				console.log(offSetArray);
+				console.log("Not shifted:", correlate( signature.counts, comparisonSignature.counts ) );
+				console.log("Shifted:", correlate( signature.counts, offSetArray ) );
+				
+
 				/*comparisonSignature.peaks.forEach(peak => {
 
 					aCtx.fillStyle = "green";				
@@ -281,11 +293,11 @@ var signature = (function(){
 
 				});*/
 
-				signature.counts.forEach( ( count, idx ) => {
+				/*signature.counts.forEach( ( count, idx ) => {
 					// debugger;
 					console.log(count, ':', comparisonSignature.counts[idx + peakOffset]);
 
-				});
+				});*/
 
 			});
 
