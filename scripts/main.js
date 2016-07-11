@@ -1,4 +1,4 @@
-/*global document, signature, sources */
+/*global document, signature, sources, correlate */
 
 var signature = (function(){
 	'use strict';
@@ -268,21 +268,60 @@ var signature = (function(){
 				aCtx.fillStyle = "rgba(0,0,255,.5)";
 				for(var g = 0; g < comparisonSignature.counts.length; g += 1){
 
-					aCtx.fillRect(g - peakOffset, analyserCanvas.height - comparisonSignature.counts[g] , 1, comparisonSignature.counts[g]);
+					aCtx.fillRect(g, analyserCanvas.height - comparisonSignature.counts[g] , 1, comparisonSignature.counts[g]);
 
 				}
 
-				var offSetArray = comparisonSignature.counts.slice(0);
+				/*var offSetArray = comparisonSignature.counts.slice(0);
 
 				for(var q = peakOffset; q < 0; q += 1){
 					offSetArray.unshift(0);
 					offSetArray.pop();
-				}
+				}*/
 
 				// console.log(offSetArray);
 				// console.log("Not shifted:", correlate( signature.counts, comparisonSignature.counts ) );
 				// console.log("Shifted:", correlate( signature.counts, offSetArray ) );
-				
+
+				// Dynamic Time Warping.
+				// We're going to chop up our counts into 10 equal sections and shift them along the X axis
+				// to a certain degree and check for a better correlation. The mean average of the best of these
+				// comparisons will then be returned as the similarity value 								
+				var sections = 10;
+				var bestResults = [];
+				var sectionSize = ((comparisonSignature.counts.length / sections) | 0);
+				var maxMovement = 10;
+
+				for(var f = 0; f < sections - 1; f += 1){
+
+					console.log(((comparisonSignature.counts.length / sections) | 0) * f);
+
+					const offset = ((comparisonSignature.counts.length / sections) | 0) * f;
+					const shiftees = comparisonSignature.counts.slice( offset, offset + sectionSize );
+
+					console.log(shiftees);
+					
+					var bestSimilarity = 0;
+
+					for(var g = 1; g < maxMovement; g += 1){
+
+						const comparitiveChunk = signature.counts.slice( offset + g, (offset + g) + sectionSize );
+
+						var v = correlate( shiftees, comparitiveChunk ); 
+
+						if(v > bestSimilarity){
+							bestSimilarity = v;
+							console.log(bestSimilarity);
+						}
+
+					}
+
+					bestResults.push(bestSimilarity);
+
+				}
+
+				console.log("DTW Similarity:", bestResults.reduce(function(a, b) { return a + b; }, 0) / bestResults.length);
+
 				return {
 					id : comparisonSignature.id,
 					similarity : correlate( signature.counts, comparisonSignature.counts ) 
@@ -321,11 +360,7 @@ var signature = (function(){
 
 			} );
 
-			// debugger;
-
-			// if(comparisons[0].similarity > 0.5){
-				console.log(signature.id, 'is most like', comparisons[0].id, '=>', comparisons[0].similarity);				
-			// }
+			console.log(signature.id, 'is most like', comparisons[0].id, '=>', comparisons[0].similarity);
 
 
 			signature.comparisons = comparisons;
