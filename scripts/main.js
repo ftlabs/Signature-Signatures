@@ -1,4 +1,4 @@
-/*global document, signature, sources */
+/*global document, signature, sources, correlate */
 
 var signature = (function(){
 	'use strict';
@@ -20,6 +20,7 @@ var signature = (function(){
 		var i = new Image();
 		i.setAttribute('data-id', x);
 		i.onload = function(){
+			// debugger;
 			document.body.appendChild(this);
 
 			var sig = {
@@ -31,6 +32,7 @@ var signature = (function(){
 				firstPeak : 0,
 				peaks : [],
 				signatureImage : new Image(),
+				profileImages : [],
 				isLike : []
 			}
 
@@ -144,7 +146,7 @@ var signature = (function(){
 			analyserCanvas.height = source.height;
 
 			aCtx.drawImage(source, 0, 0);
-
+			// debugger;
 			var pixelData = aCtx.getImageData(0,0,analyserCanvas.width, analyserCanvas.height);
 			var d = pixelData.data;
 
@@ -172,12 +174,6 @@ var signature = (function(){
 			// If over 30% of the pixels in a column are black, it can be considered a peak
 			var peakThreshold = source.height * 0.3 | 0; 
 
-			// Sift through the counts and identify the peaks in pixel data§
-			/*counts.forEach((count, xCor) => {
-				if(count > peakThreshold){
-					signature.peaks.push(xCor);
-				}
-			});*/
 
 			var peakSampleSize = 5;
 
@@ -234,26 +230,9 @@ var signature = (function(){
 
 			analyserCanvas.width = thisSource.width;
 			analyserCanvas.height = thisSource.height;
+			aCtx.clearRect(0,0,analyserCanvas.width, analyserCanvas.height);
 			aCtx.drawImage(thisSource, 0, 0);
-
 			// nCtx.lineWidth = 1;
-			aCtx.fillStyle = "rgba(255,0,0,.5)";
-			for(var g = 0; g < signature.counts.length; g += 1){
-
-				aCtx.fillRect(g, analyserCanvas.height - signature.counts[g] , 1, signature.counts[g]);
-
-			}
-
-			aCtx.fillStyle = "orange";
-
-			/*signature.peaks.forEach(peak => {
-
-				aCtx.fillStyle = "orange";				
-				aCtx.fillRect(peak.start, 0, peak.end - peak.start, analyserCanvas.height )
-				aCtx.fillStyle = "yellow";
-				aCtx.fillRect(peak.middle, 0, 1, analyserCanvas.height);
-
-			});*/
 
 			var comparisons = signatures.map( comparisonSignature => {
 				
@@ -261,31 +240,79 @@ var signature = (function(){
 					return
 				}
 
-				// console.log(signature.id, '=>', comparisonSignature.id);
+				aCtx.clearRect(0,0,analyserCanvas.width, analyserCanvas.height);			
+				aCtx.fillStyle = "rgba(255,0,0,.5)";
+				for(var g = 0; g < signature.counts.length; g += 1){
 
-				var peakOffset = comparisonSignature.firstPeak.middle - signature.firstPeak.middle;
+					aCtx.fillRect(g, analyserCanvas.height - signature.counts[g] , 1, signature.counts[g]);
+
+				}
 
 				aCtx.fillStyle = "rgba(0,0,255,.5)";
 				for(var g = 0; g < comparisonSignature.counts.length; g += 1){
 
-					aCtx.fillRect(g - peakOffset, analyserCanvas.height - comparisonSignature.counts[g] , 1, comparisonSignature.counts[g]);
+					aCtx.fillRect(g, analyserCanvas.height - comparisonSignature.counts[g] , 1, comparisonSignature.counts[g]);
 
 				}
 
-				var offSetArray = comparisonSignature.counts.slice(0);
+				signature.profileImages[parseInt(comparisonSignature.id)] = new Image()
+				signature.profileImages[parseInt(comparisonSignature.id)].src = analyserCanvas.toDataURL('image/png');
+
+				/*var offSetArray = comparisonSignature.counts.slice(0);
 
 				for(var q = peakOffset; q < 0; q += 1){
 					offSetArray.unshift(0);
 					offSetArray.pop();
-				}
+				}*/
 
 				// console.log(offSetArray);
 				// console.log("Not shifted:", correlate( signature.counts, comparisonSignature.counts ) );
 				// console.log("Shifted:", correlate( signature.counts, offSetArray ) );
-				
+
+				// Dynamic Time Warping.
+				// We're going to chop up our counts into 10 equal sections and shift them along the X axis
+				// to a certain degree and check for a better correlation. The mean average of the best of these
+				// comparisons will then be returned as the similarity value 								
+				var sections = 10;
+				var bestResults = [];
+				var sectionSize = ((comparisonSignature.counts.length / sections) | 0);
+				var maxMovement = sectionSize;
+
+				for(var f = 0; f < sections - 1; f += 1){
+
+					// console.log(((comparisonSignature.counts.length / sections) | 0) * f);
+
+					const offset = ((comparisonSignature.counts.length / sections) | 0) * f;
+					const shiftees = comparisonSignature.counts.slice( offset, offset + sectionSize );
+
+					// console.log(shiftees);
+					
+					var bestSimilarity = 0;
+
+					for(var g = -maxMovement; g < maxMovement; g += 1){
+
+						const comparitiveChunk = signature.counts.slice( offset + g, (offset + g) + sectionSize );
+
+						var v = correlate( shiftees, comparitiveChunk ); 
+
+						if(v > bestSimilarity){
+							bestSimilarity = v;
+							// console.log(bestSimilarity);
+						}
+
+					}
+
+					bestResults.push(bestSimilarity);
+
+				}
+
+				// console.log("DTW Similarity:", bestResults.reduce(function(a, b) { return a + b; }, 0) / bestResults.length);
+
 				return {
 					id : comparisonSignature.id,
-					similarity : correlate( signature.counts, comparisonSignature.counts ) 
+					// similarity : correlate( signature.counts, comparisonSignature.counts ) 
+					similarity :  bestResults.reduce(function(a, b) { return a + b; }, 0) / bestResults.length,
+					source : comparisonSignature
 				};
 
 				/*comparisonSignature.peaks.forEach(peak => {
@@ -304,12 +331,12 @@ var signature = (function(){
 				});*/
 
 			});
-
+			
 			comparisons = comparisons.filter(o => {
 				return o !== undefined;
 			})
 			
-			comparisons.sort( (a,b) => {
+			comparisons = comparisons.sort( (a,b) => {
 
 				if(a.similarity > b.similarity){
 					return -1
@@ -321,12 +348,13 @@ var signature = (function(){
 
 			} );
 
-			// debugger;
+			console.log(comparisons);
 
-			// if(comparisons[0].similarity > 0.5){
-				console.log(signature.id, 'is most like', comparisons[0].id, '=>', comparisons[0].similarity);				
-			// }
+			console.log(signature.id, 'is most like', comparisons[0].id, '=>', comparisons[0].similarity);
 
+			if(comparisons[0].similarity > 0.6){
+				document.querySelector('#results').innerHTML += `<li><img src="${signature.normalisedImage.src}" data-id="${signature.id}">${signature.id} is most like ${comparisons[0].id}<img src="${comparisons[0].source.normalisedImage.src}" data-id="${comparisons[0].id}">${comparisons[0].similarity}<img src="${signature.profileImages[parseInt(comparisons[0].id)].src}"></li>`;
+			}
 
 			signature.comparisons = comparisons;
 

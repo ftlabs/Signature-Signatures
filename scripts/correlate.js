@@ -1,3 +1,4 @@
+// https://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 var correlate, covariance, map, mean, range, stdDev, sum, zip, zipWith;
 
 correlate = function(xs, ys) {
