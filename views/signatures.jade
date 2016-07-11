@@ -1,0 +1,32 @@
+extends layout
+
+block content
+    h1 Signatures
+
+    if signatures.length
+        p Here are the current signatures:
+        ul.signatures
+            for signature in signatures
+                li.signature
+                    a(href='/signatures/#{signature.hash}') @#{signature.hash}
+    else
+        p There are no signatures currently.
+
+    //- form(action='', method='POST')
+    //-     p Create a new signature:
+    //-     span @
+    //-     input(type='text', name='hash', placeholder='hash', required,
+    //-         minlength=Signature.VALIDATION_INFO.hash.minLength,
+    //-         maxlength=Signature.VALIDATION_INFO.hash.maxLength,
+    //-         pattern=Signature.VALIDATION_INFO.hash.pattern.source,
+    //-         title=Signature.VALIDATION_INFO.hash.message,
+    //-         value=hash||'')
+    //-     input(type='submit', value='Create')
+    //-     if error
+    //-         span.error &nbsp;#{error}
+
+    label Image File:
+    input(type='file', id='imageLoader', name='imageLoader', accept='image/*')
+    img(id='image')
+    canvas(id='imageCanvas')
+    script(src='/js/upload.js')

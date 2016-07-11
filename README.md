@@ -1,10 +1,32 @@
-# Signature Signatures
+# Signature-signatures
 
-We have a need to identify handwritten signatures across multiple documents. This is an attempt at a cheap and dirty way of identifying signatures and grouping them together by common features.
 
-## How does it work?
+## Installation
 
-Each signature (or in the case of the current test data, handwritten words) is added to a canvas where all color information is removed, leaving only black and transparent pixels. 
+```
+git clone git@github.com:ftlabs/Signature-Signatures.git
+cd Signature-Signatures
+npm install
+```
 
-The code then works along the X-axis of the image and counts every black pixel along the Y axis of the X-Axis. Each X-Axis can be considered a bucket of values.
+You'll also need a local Neo4j 2.x instance.
+Install it via **[neo4j.org/download](http://neo4j.org/download)**,
+or if you're on a Mac, `brew install neo4j`.
 
+
+## Usage
+
+Start your local Neo4j instance (e.g. `neo4j start`), then:
+
+```
+npm start
+```
+
+The app will now be accessible at
+[http://localhost:3000/](http://localhost:3000/).
+
+To run the tests:
+
+```
+npm test
+```
