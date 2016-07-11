@@ -93,7 +93,7 @@ function validateProp(prop, val, required) {
 
 function isConstraintViolation(err) {
     return err instanceof neo4j.ClientError &&
-        err.neo4j.code === 'Neo.ClientError.Schema.ConstraintValidationFailed';
+        (err.neo4j.code === 'Neo.ClientError.Schema.ConstraintValidationFailed' || err.neo4j.code === 'Neo.ClientError.Schema.ConstraintViolation');
 }
 
 // Public instance methods:
