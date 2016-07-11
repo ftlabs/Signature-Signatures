@@ -2,38 +2,110 @@ const compare = (function(){
 
 	'use strict';
 
-	/*const analyserCanvas = document.createElement('canvas');
-	const aCtx = analyserCanvas.getContext('2d');
+	const correlate = (function(xs, ys){
 
-	const normaliserCanvas = document.createElement('canvas');
-	const nCtx = analyserCanvas.getContext('2d');*/
+		return covariance(xs, ys) / (stdDev(xs) * stdDev(ys));
 
-	const c1 = document.createElement('canvas');
-	const c2 = document.createElement('canvas');
-	
-	c1.setAttribute('hidden', 'true');
-	c2.setAttribute('hidden', 'true');
+		function covariance (xs, ys) {
+			var mx, my, ref;
+			ref = [mean(xs), mean(ys)], mx = ref[0], my = ref[1];
+			return mean(zipWith(xs, ys, function(x, y) {
+				return (x - mx) * (y - my);
+			}));
+		}
 
-	document.body.appendChild(c1);
-	document.body.appendChild(c2);
+		function stdDev (xs) {
+			var mx;
+			mx = mean(xs);
+			return Math.sqrt(mean(map(xs, function(x) {
+				return Math.pow(x - mx, 2);
+			})));
+		}
 
-	const canvi = document.querySelectorAll('canvas');
+		function mean (xs) {
+			return sum(xs) / xs.length;
+		}
 
-	const analyserCanvas = c1;
-	const aCtx = analyserCanvas.getContext('2d');
+		function sum (xs) {
+			return xs.reduce((function(a, b) {
+				return a + b;
+			}), 0);
+		}
 
-	const normaliserCanvas = c2;
-	const nCtx = normaliserCanvas.getContext('2d');
+		function zipWith (xs, ys, fn) {
+			return map(zip(xs, ys), function(arg) {
+				var x, y;
+				x = arg[0], y = arg[1];
+				return fn(x, y);
+			});
+		}
+
+		function zip (xs, ys) {
+			return map(range(Math.min(xs.length, ys.length)), function(i) {
+				return [xs[i], ys[i]];
+			});
+		}
+
+		function map (xs, fn) {
+			return xs.map(fn);
+		}
+
+		function range (start, stop, step) {
+			var j, ref, ref1, results;
+			if (stop == null) {
+				stop = start;
+			}
+			if (step == null) {
+				step = 1;
+			}
+			if (arguments.length === 1) {
+				start = 0;
+			}
+			return (function() {
+				results = [];
+				for (var j = ref = start / step, ref1 = stop / step; ref <= ref1 ? j < ref1 : j > ref1; ref <= ref1 ? j++ : j--){ results.push(j); }
+				return results;
+			}).apply(this).map(function(i) {
+				return Math.floor(i * step);
+			});
+		}
+	});
+
+	var c1 = undefined;
+	var c2 = undefined;
+
+	var analyserCanvas = undefined;
+	var aCtx = undefined;
+
+	var normaliserCanvas = undefined;
+	var nCtx = undefined;
+
+	function createCanvases(){
+		
+		c1 = document.createElement('canvas');
+		c2 = document.createElement('canvas');
+		
+		c1.setAttribute('hidden', 'true');
+		c2.setAttribute('hidden', 'true');
+
+		document.body.appendChild(c1);
+		document.body.appendChild(c2);
+
+		analyserCanvas = c1;
+		aCtx = analyserCanvas.getContext('2d');
+
+		normaliserCanvas = c2;
+		nCtx = normaliserCanvas.getContext('2d');
+
+	}
 
 	function normaliseImage(image){
-		// console.log('Normalise');
 
 		var thisSource = image;
 
 		normaliserCanvas.width = thisSource.width;
 		normaliserCanvas.height = thisSource.height;
 		nCtx.drawImage(thisSource, 0, 0);
-		// nCtx.drawImage(thisSource, 0, 0, imageSize, imageSize); 
 
 		var pixelData = nCtx.getImageData(0,0,normaliserCanvas.width, normaliserCanvas.height);
 		var d = pixelData.data;
@@ -226,12 +298,13 @@ const compare = (function(){
 	}
 
 	function compareTwoImages(image1, image2){
-		const start = performance.now();
+
+		createCanvases();
+
 		const d1 = generateProfile( normaliseImage(image1) );
 		const d2 = generateProfile( normaliseImage(image2) );
 
 		const result = compareTheData(d1, d2);
-		console.log(performance.now() - start, 'ms to compare');
 
 		normaliserCanvas.parentNode.removeChild(normaliserCanvas);
 		analyserCanvas.parentNode.removeChild(analyserCanvas);

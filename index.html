@@ -56,7 +56,7 @@
 				// '/images/40.png',
 			];
 		</script>
-		<script src="/scripts/correlate.js"></script>
+		<!--<script src="/scripts/correlate.js"></script>-->
 		<script src="/scripts/compare.js"></script>
 
 		<img src="/images/4.png">
@@ -68,6 +68,8 @@
 
 			setTimeout(function(){
 				console.log(compare.images(Is[0], Is[1]));
+				console.log(compare.images(Is[1], Is[0]));
+				console.log(compare.images(Is[0], Is[0]));
 			}, 3000);
 
 
