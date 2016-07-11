@@ -1,3 +1,5 @@
 machine:
   services:
     - neo4j
+  node:
+    version: 6.0.0
