@@ -40,3 +40,17 @@ span{
 .dTwo{
 	margin-left: 150px;
 }
+
+#results li{
+	display: flex;
+    align-items: center;
+	list-style-type: none;
+}
+
+#results li img{
+	width: 100px;
+}
+
+#results li img:hover{
+	width: 300px;
+}
