@@ -1,0 +1,25 @@
+extends layout
+
+block content
+    h1 @#{signature.hash}
+
+    p
+        a(href='/signatures') Back to signatures
+
+    form(action='/signatures/#{signature.hash}', method='POST')
+        p Edit this signature:
+        span @
+        input(type='text', name='hash', placeholder='#{signature.hash}', required,
+            minlength=Signature.VALIDATION_INFO.hash.minLength,
+            maxlength=Signature.VALIDATION_INFO.hash.maxLength,
+            pattern=Signature.VALIDATION_INFO.hash.pattern.source,
+            title=Signature.VALIDATION_INFO.hash.message,
+            value=hash||'')
+        input(type='submit', value='Update')
+        if error
+            span.error &nbsp;#{error}
+
+    form(action='/signatures/#{signature.hash}', method='POST', onsubmit='return confirm("Are you sure?");')
+        p And if you're feeling destructive…
+        input(type='hidden', name='_method', value='DELETE')
+        input(type='submit', value='Delete signature')

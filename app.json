@@ -1,0 +1,7 @@
+{
+  "name": "sig",
+  "description": "Signature signatures",
+  "website": "https://labs.ft.com",
+  "keywords": ["node", "neo4j", "signatures"],
+  "addons": ["graphenedb:chalk"]
+}
